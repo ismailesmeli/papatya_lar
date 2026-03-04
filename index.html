@@ -26,71 +26,85 @@
 
         .glass-card {
             background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             padding: 40px;
             border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            width: 80%; max-width: 450px;
+            width: 80%; max-width: 400px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             opacity: 0;
-            transition: opacity 2s ease;
+            transition: all 1s ease;
+            position: relative;
+            pointer-events: auto; /* Kart tıklanabilir olmalı */
         }
+
+        /* Kapatma Çarpısı */
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            color: rgba(255,255,255,0.4);
+            font-size: 24px; cursor: pointer;
+            transition: 0.3s; line-height: 1;
+        }
+        .close-btn:hover { color: #fff; }
 
         h1 { 
             font-family: 'Dancing Script', cursive;
-            font-size: 3.5rem; color: #fff; margin: 0;
-            text-shadow: 0 0 30px rgba(255,255,255,0.4);
+            font-size: 3rem; color: #fff; margin: 0;
+            text-shadow: 0 0 20px rgba(255,255,255,0.4);
         }
 
-        p { color: rgba(255,255,255,0.6); font-weight: 300; line-height: 1.8; margin-top: 20px; font-size: 1.1rem; }
-
-        .hint-text {
-            position: absolute; bottom: 40px;
-            color: rgba(255,255,255,0.2);
-            font-size: 0.7rem; letter-spacing: 5px;
-            text-transform: uppercase;
-        }
+        p { color: rgba(255,255,255,0.7); font-weight: 300; line-height: 1.8; margin-top: 20px; }
 
         /* Başlangıç Ekranı */
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a201a 0%, #050505 100%);
-            z-index: 100; display: flex;
+            background: #050505; z-index: 100; display: flex;
             justify-content: center; align-items: center;
-            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 1.5s ease;
         }
 
         .start-btn {
-            background: none; border: 1px solid rgba(255,255,255,0.3); color: #fff;
-            padding: 18px 50px; border-radius: 2px; cursor: pointer;
-            font-family: 'Quicksand', sans-serif; font-size: 0.9rem;
-            letter-spacing: 4px; transition: all 0.5s;
+            background: none; border: 1px solid #fff; color: #fff;
+            padding: 15px 40px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; letter-spacing: 3px;
         }
 
-        .start-btn:hover { background: #fff; color: #000; box-shadow: 0 0 30px #fff; }
+        /* Müzik Kontrolü (Küçük ikon) */
+        #music-toggle {
+            position: fixed; bottom: 20px; right: 20px;
+            color: rgba(255,255,255,0.3); font-size: 20px;
+            cursor: pointer; z-index: 20;
+        }
     </style>
 </head>
 <body>
 
     <div id="start-overlay">
-        <button class="start-btn" onclick="startExperience()">KEŞFETMEYE BAŞLA</button>
+        <button class="start-btn" onclick="startExperience()">BAHÇEYE GİR</button>
     </div>
 
     <div class="ui-layer">
         <div id="main-card" class="glass-card">
+            <div class="close-btn" onclick="closeCard()">×</div>
             <h1>Senin İçin...</h1>
-            <p>Bu bahçe sadece sana özel açar. Ekrana dokun, papatyalar senin ışığını takip etsin.</p>
+            <p>Hayatın kalabalığında bazen durup sadece bu papatyaları izle. Onlar senin dokunuşunla parlıyor...</p>
         </div>
-        <div class="hint-text">Parmaklarınla Papatyalara Dokun</div>
     </div>
+
+    <div id="music-toggle" onclick="toggleMusic()">🎵</div>
+
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg">
+    </audio>
 
     <canvas id="canvas"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const music = document.getElementById('bg-music');
         let width, height, particles = [];
         const mouse = { x: undefined, y: undefined, radius: 150 };
 
@@ -107,30 +121,25 @@
                 this.y = Math.random() * height;
                 this.baseX = this.x;
                 this.baseY = this.y;
-                this.size = (Math.random() * 7) + 3;
+                this.size = (Math.random() * 6) + 3;
                 this.density = (Math.random() * 30) + 10;
                 this.angle = Math.random() * 360;
                 this.spin = (Math.random() - 0.5) * 0.1;
-                this.distanceFactor = Math.random() * 0.1 + 0.02;
             }
 
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle * Math.PI / 180);
-                
-                // Papatya Yaprakları (Gelişmiş Form)
-                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
                 for(let i=0; i<8; i++) {
                     ctx.rotate(Math.PI/4);
                     ctx.beginPath();
                     ctx.ellipse(this.size*1.3, 0, this.size, this.size/3, 0, 0, Math.PI*2);
                     ctx.fill();
                 }
-
-                // Altın Sarısı Tohum
                 ctx.beginPath();
-                ctx.arc(0, 0, this.size*0.8, 0, Math.PI*2);
+                ctx.arc(0, 0, this.size*0.7, 0, Math.PI*2);
                 ctx.fillStyle = "#FFD700";
                 ctx.fill();
                 ctx.restore();
@@ -140,16 +149,13 @@
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let distance = Math.sqrt(dx*dx + dy*dy);
-                
                 if (distance < mouse.radius) {
                     let force = (mouse.radius - distance) / mouse.radius;
-                    let moveX = (dx / distance) * force * this.density;
-                    let moveY = (dy / distance) * force * this.density;
-                    this.x += moveX;
-                    this.y += moveY;
+                    this.x += (dx / distance) * force * this.density;
+                    this.y += (dy / distance) * force * this.density;
                 } else {
-                    this.x -= (this.x - this.baseX) * this.distanceFactor;
-                    this.y -= (this.y - this.baseY) * this.distanceFactor;
+                    this.x -= (this.x - this.baseX) * 0.05;
+                    this.y -= (this.y - this.baseY) * 0.05;
                 }
                 this.angle += this.spin;
             }
@@ -157,49 +163,40 @@
 
         function initParticles() {
             particles = [];
-            let particleCount = (width < 600) ? 180 : 450;
-            for(let i=0; i<particleCount; i++) {
-                particles.push(new Particle());
-            }
+            let count = (width < 600) ? 180 : 400;
+            for(let i=0; i<count; i++) particles.push(new Particle());
         }
 
         function animate() {
-            ctx.fillStyle = 'rgba(8, 10, 8, 0.15)';
+            ctx.fillStyle = 'rgba(8, 10, 8, 0.2)';
             ctx.fillRect(0, 0, width, height);
-            
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animate);
         }
 
-        const handleMove = (e) => {
-            const pos = e.touches ? e.touches[0] : e;
-            mouse.x = pos.clientX;
-            mouse.y = pos.clientY;
-        };
-
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('touchmove', handleMove);
-        window.addEventListener('touchstart', handleMove);
-        window.addEventListener('touchend', () => { mouse.x = undefined; mouse.y = undefined; });
-        window.addEventListener('resize', resize);
-
         function startExperience() {
-            const overlay = document.getElementById('start-overlay');
-            overlay.style.opacity = '0';
-            overlay.style.transform = 'scale(1.2)';
+            document.getElementById('start-overlay').style.opacity = '0';
             setTimeout(() => {
-                overlay.style.display = 'none';
+                document.getElementById('start-overlay').style.display = 'none';
                 document.getElementById('main-card').style.opacity = '1';
             }, 1500);
-            
-            // Buraya istersen huzurlu bir müzik linki ekleyebiliriz
+            music.play();
             resize();
             animate();
         }
 
+        function closeCard() {
+            document.getElementById('main-card').style.opacity = '0';
+            document.getElementById('main-card').style.pointerEvents = 'none';
+        }
+
+        function toggleMusic() {
+            if (music.paused) music.play(); else music.pause();
+        }
+
+        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+        window.addEventListener('touchmove', (e) => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
+        window.addEventListener('resize', resize);
         resize();
     </script>
 </body>
